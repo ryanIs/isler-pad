@@ -1,4 +1,7 @@
 import { MemoryRouter as Router, Routes, Route } from 'react-router-dom';
+import { useState,
+  useEffect,
+} from 'react';
 import icon from '../../assets/icon.svg';
 import '@fontsource/roboto/300.css';
 import '@fontsource/roboto/400.css';
@@ -7,115 +10,21 @@ import '@fontsource/roboto/700.css';
 import './App.css';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { CssBaseline, Button } from '@mui/material';
-// import settingsJSON from './test.jsonc' assert { type: `json` };
-// import settingsJSON from './test.jsonc';
-var asettingsJSON = require('./test.txt')
-// var fs = require('fs');
-// import fs from 'fs';
-// var obj = JSON.parse(fs.readFileSync('test.jsonc', 'utf8'));
-// import { jsonc } from 'jsonc';
-console.log(asettingsJSON)
-console.log(asettingsJSON)
-console.log(asettingsJSON)
-let settingsJSON: any = `
-{
-  "default": {
-    "defaultProfile": true,
-    "associatedPrograms": [],
-    "components": [
-      {
-        "id": "copy-tap",
-        "componentId": "Tap",
-        "name": "component name",
-        "z-index": 0,
-        "props": {
-          "width": "50px",
-          "height": "50px",
-          "left": "100px",
-          "top": "100px",
-          "innerHTML": "Tap me!",
-          "CSSThemeOveride": "blue",
-          "options": {
-            "tapWaitIntervalMS": 300
-          },
-          "CSS": {
-            "button": {}
-          },
-          "taps": [
-            {
-              "onTouchEnd": {
-                "default": "SYSTEM_SEND_KEYS LEFT_CONTROL C",
-                "control": "",
-                "control alt": "",
-                "alt": ""
-              },
-              "onTouchHeld": {
-                "default": "SYSTEM_ATTACH_COMPONENT_TO_ME default-Window",
-                "default-Window": {
-                  "id": "left-control-copy-window",
-                  "componentId": "Window",
-                  "name": "left control highlight window",
-                  "props": {
-                    "z-index": 1000,
-                    "left": "0",
-                    "top": "0",
-                    "width": "100px",
-                    "height": "100px",
-                    "CSSThemeOveride": "default",
-                    "CSS": {},
-                    "components": [
-                      {
-                        "id": "paste-tap",
-                        "componentId": "Tap",
-                        "name": "component name 22",
-                        "props": {
-                          
-                          "innerHTML": "Tap me 222!",
-                          "left": "50",
-                          "top": "50",
-                          "CSSThemeOveride": "red",
-                          "onTouchEnd": {
-                            "default": "SYSTEM_SEND_KEYS LEFT_CONTROL P"
-                          },
-                          "onAfterAnyTouchProcedure": "SYSTEM_REMOVE_MY_PARENT" 
-                        }
-                      },
 
-                      {
-                        "id": "all-tap",
-                        "componentId": "Tap",
-                        "name": "component name bbb",
-                        "props": {
-                          
-                          "innerHTML": "Tap me 333!",
-                          "left": "70",
-                          "top": "70",
-                          "CSSThemeOveride": "green",
-                          "onTouchEnd": {
-                            "default": "SYSTEM_SEND_KEYS LEFT_CONTROL A"
-                          },
-                          "onAfterAnyTouchProcedure": "SYSTEM_REMOVE_MY_PARENT" 
-                        }
-                      }
-                    ]
-                  }
-                }
-              },
-              "onTouchHeldOutside": {
-                "default": "SYSTEM_GET_FUNCTION SYSTEM_CONST_SAME_OBJECT onTouchHeld"
-              }
-            }
-          ]
-        }
-      }
-    ]
-  },
-  
-  "vscode": {}
-}
-`
+import Tap from './components/Tap/Tap'
+import ComponentsRenderer from './components/ComponentsRenderer'
 
+var appGlobalState: any = null
 
+// save globalstate to external (to application) JSON file. (ON same computer as this app/exe)
+// const saveGlobalState = () => {
+//   // globalState
+//   // JSON.stringify
+// }
+
+// const dynamicComponents: object = {
+//   'Tap': Tap,
+// }
 
 const darkTheme = createTheme({
   palette: {
@@ -124,6 +33,8 @@ const darkTheme = createTheme({
   },
 })
 
+
+
 /**
  * Default View is the main view that the react router loads.
  * 
@@ -131,15 +42,101 @@ const darkTheme = createTheme({
  */
 const DefaultView = () => {
 
-  settingsJSON = JSON.parse(settingsJSON)
+  const [profiles, setProfiles] = useState(null)
+  const [currentProfile, setCurrentProfile] = useState('default')
 
-  // console.log(settingsJSON)
+  let loadedGlobalStateFromJSONFile = false
+
+  useEffect(() => {
+
+    // todo: load in global state from globalstate.json (create)
+    //    if legit; set globalState
+    // 
+      //    let loadedGlobalStateFromJSONFile = true
+
+
+    // Get the settings.jsonc loaded from electron main application through ipcRenderer.
+    // We then load our front-end React UI based on the settings.jsonc configuration.
+    window.electron.ipcRenderer.sendMessage('get-settings-json', ['ping']);
+    window.electron.ipcRenderer.once('get-settings-json', (arg :any) => {
+      // console.log(arg);
+      if(arg != null && arg.default != null) {
+        setProfiles(arg)
+      }
+    });
+
+    return () => {
+      // on component unload here
+    }
+  }, [])
+
+  const system: any = {
+    loadedGlobalStateFromJSONFile: loadedGlobalStateFromJSONFile,
+    
+    appGlobalState: appGlobalState,
+
+  // systemCommand handles all system commands. This function will handle the big work.
+    command: (command: string, options = null) => {
+      
+    },
+    
+  // Displays a nice looking message using material UI
+  // todo: warnings, errors, normal, succes, etc.
+    sendMessage: (msg: string, msgType: string) => {
+      console.log(msg)
+    },
+    updateGlobalState: (componentId: string, state: object) => {
+      appGlobalState[componentId] = state
+    },
+  }
 
   return (
     // <div style={{background: 'black'}}>
     <div>
 
+      <div className="app-container">
 
+        
+        {
+          (profiles != null) ? 
+            <ComponentsRenderer system={system} components={profiles[currentProfile].components} />
+            :
+            null
+        }
+
+        {/* {
+          (profiles != null) ? 
+            profiles[currentProfile].components.map((component: object, index: number) => {
+
+              if(component != null) {
+
+                // store global state for saving if not loaded from globalstate.json
+                if(loadedGlobalStateFromJSONFile == false) {
+                  if(component.props != null && component.state != null && component.componentId != null) {
+                    appGlobalState[component.componentId] = component.props.state
+                  }
+                }
+
+                if(component.componentId == 'some unique component') {
+                }
+                else {
+                  let DynamicComponent: object = dynamicComponents[component.componentId]
+                  return (
+                    <DynamicComponent {...component.props} 
+                      key={component.componentId + '--' + index} 
+                      componentId={index} 
+                      system={system} 
+                      />
+                  )
+                }
+              }
+
+            })
+            :
+            null
+        } */}
+
+      </div>  
 
     </div>
         // {/* <Button variant="outlined">Hello</Button> */}

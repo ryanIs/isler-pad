@@ -15,6 +15,9 @@ import log from 'electron-log';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
 
+import fs from 'fs'
+import { jsonc } from 'jsonc'
+
 export default class AppUpdater {
   constructor() {
     log.transports.file.level = 'info';
@@ -30,6 +33,14 @@ ipcMain.on('ipc-example', async (event, arg) => {
   console.log(msgTemplate(arg));
   event.reply('ipc-example', msgTemplate('pong'));
 });
+
+ipcMain.on('get-settings-json', async (event, arg) => {
+  // const msgTemplate = (pingPong: string) => `IPC test: ${pingPong}`;
+  // console.log(msgTemplate(arg));
+  event.reply('get-settings-json', settingsJSON);
+});
+
+
 
 if (process.env.NODE_ENV === 'production') {
   const sourceMapSupport = require('source-map-support');
@@ -56,6 +67,9 @@ const installExtensions = async () => {
     .catch(console.log);
 };
 
+
+var settingsJSON: any
+
 const createWindow = async () => {
   if (isDebug) {
     await installExtensions();
@@ -71,8 +85,8 @@ const createWindow = async () => {
 
   mainWindow = new BrowserWindow({
     show: false,
-    width: 1024,
-    height: 728,
+    width: 1500,
+    height: 1028,
     icon: getAssetPath('icon.png'),
     webPreferences: {
       preload: app.isPackaged
@@ -87,6 +101,15 @@ const createWindow = async () => {
     if (!mainWindow) {
       throw new Error('"mainWindow" is not defined');
     }
+    
+    let FSRawData: string = fs.readFileSync( path.join(__dirname, 'settings.jsonc'), {encoding: 'utf8', flag: 'r'} );
+    try {
+    settingsJSON = jsonc.parse(FSRawData)
+    } catch(e) {
+      console.log('ERROR PARSING SETTINGS JSON!!')
+    }
+    // console.log(settingsJSON);
+
     if (process.env.START_MINIMIZED) {
       mainWindow.minimize();
     } else {
@@ -135,3 +158,5 @@ app
     });
   })
   .catch(console.log);
+
+

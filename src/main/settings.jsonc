@@ -1,0 +1,142 @@
+{
+  "default": {
+    "defaultProfile": true,
+    "associatedPrograms": [],
+    "components": [
+      {
+        "componentId": "Tap",
+        "props": {
+          "name": "CTRL C",
+          "id": "copy-tap",
+          "width": "50px",
+          "height": "50px",
+          "left": "100px",
+          "top": "100px",
+          "z-index": 0,
+          "innerHTML": "Tap me!",
+          "CSSThemeOveride": "blue",
+          "state": {},
+          "options": {
+            "tapWaitIntervalMS": 300
+          }, 
+          "CSS": { 
+            "button": {}
+          },
+          "componentEnabled": true,
+          "taps": [
+            {  
+              "onTouchEnd": {
+                "default": "SYSTEM_SEND_KEYS LEFT_CONTROL C",
+                "control": "",
+                "control alt": "", 
+                "alt": ""
+              },
+              "onTouchHeld": {
+                "default": "SYSTEM_SELF_SET_COMPONENT_PROP copy-tap.copy-dynamic-window-tap-0 componentEnabled true"
+              },
+              "onTouchHeldOutside": {
+                "default": "SYSTEM_SELF_GET_FUNCTION SYSTEM_CONST_SAME_OBJECT onTouchHeld"
+              }
+            }
+          ],
+          "components": [
+            {
+              "componentId": "DynamicWindow",
+              "props": {
+                "id": "copy-tap.copy-dynamic-window-tap-0",
+                "name": "left control highlight window",
+                "z-index": 1000,
+                "left": "0",
+                "top": "0",
+                "width": "100px",
+                "height": "100px",
+                "CSSThemeOveride": "default",
+                "CSS": {},
+                "state": {
+                  
+                },
+                "componentEnabled": false,
+                "casterOnTouchEnd": "SYSTEM_SELF_SET_COMPONENT_PROP copy-tap.copy-dynamic-window-tap-0 componentEnabled false",
+                // "componentEnabled": true,
+                "components": [
+                  {
+                    "componentId": "Tap",
+                    "props": {
+                      "state": {},
+                      "name": "component name 22",
+                      "id": "copy-tap.copy-window.tap-22",
+                      "componentId": "Tap",
+                      // having this defined means it's type is 'release-only'. this means no taps[] array
+                      "innerHTML": "Tap me 222!",
+                      "left": "50",
+                      "top": "50",
+                      "CSSThemeOveride": "red",
+                      "componentEnabled": true,
+                      "onTouchEnd": {
+                        "default": "SYSTEM_SEND_KEYS LEFT_CONTROL P"
+                      },
+                      "onAfterAnyTouchProcedure": "SYSTEM_REMOVE_MY_PARENT" // ran after any of this props events have fired.
+                    }
+                  },
+
+                  {
+                    "componentId": "Tap",
+                    "props": {
+                    "componentEnabled": true,
+                      "id": "copy-tap.copy-window.tap-bbb",
+                      "name": "component name bbb",
+                      // having this defined means it's type is 'release-only'. this means no taps[] array
+                      "innerHTML": "Tap me 333!",
+                      "left": "70",
+                      "top": "70",
+                      "state": {},
+                      "CSSThemeOveride": "green",
+                      "onTouchEnd": {
+                        "default": "SYSTEM_SEND_KEYS LEFT_CONTROL A"
+                      },
+                      "onAfterAnyTouchProcedure": "SYSTEM_REMOVE_MY_PARENT" // ran after any of this props events have fired.
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      {
+        "componentId": "Tap",
+        "props": {
+          "name": "nothingLol",
+          "id": "copy-tap222",
+          "width": "50px",
+          "height": "50px",
+          "left": "100px",
+          "top": "100px",
+          "z-index": 0,
+          "componentEnabled": true,
+          "innerHTML": "Tap me22!",
+          "CSSThemeOveride": "blue",
+          "state": {
+            "enabled": 1
+          },
+          "options": {
+            "tapWaitIntervalMS": 400
+          },
+            
+          "taps": [
+            {
+              "onTouchEnd": {
+                "default": "SYSTEM_SEND_KEYS LEFT_CONTROL DDDD",
+                "control": "",
+                "control alt": "",
+                "alt": ""
+              }
+            }
+          ]
+        }
+      }
+    ]
+  },
+  
+  "vscode": {}
+}
