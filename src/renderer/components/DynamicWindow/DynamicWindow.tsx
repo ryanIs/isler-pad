@@ -13,19 +13,21 @@ import Button, { ButtonProps } from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
 import { purple } from '@mui/material/colors';
 import styled from 'styled-components'
+
 import ComponentsRenderer from '../ComponentsRenderer'
+import Util from '../../Util'
 
-const ColorButton = styled(Button)<ButtonProps>(({ theme }) => ({
-  color: theme.palette.getContrastText(purple[500]),
-  backgroundColor: purple[500],
-  '&:hover': {
-    backgroundColor: purple[700],
-  },
-}));
+// const ColorButton = styled(Button)<ButtonProps>(({ theme }) => ({
+//   color: theme.palette.getContrastText(purple[500]),
+//   backgroundColor: purple[500],
+//   '&:hover': {
+//     backgroundColor: purple[700],
+//   },
+// }));
 
-const WindowContainer = styled.div`
-  background: green;
-`
+// const WindowContainer = styled.div`
+//   background: green;
+// `
 
 /**
  * Default View is the main view that the react router loads.
@@ -47,6 +49,20 @@ const DynamicWindow = (props: any) => {
 
   // name is the label text displayed on the prop.
   const [name, setName] = useState(props.name || 'unknown_name')
+
+  const [containerStyle, setContainerStyle] = useState(Util.containerCSSDefaultsHandler( props.containerCSS, props.componentId ) )
+
+  // const [containerStyle, setContainerStyle] = useState({
+  //   width: props.width || '200px',
+  //   height: props.height || '200px',
+  //   top: props.top || 'none',
+  //   left: props.left || 'none',
+  //   right: props.right || 'none',
+  //   bottom: props.bottom || 'none',
+  //   zIndex: props.zIndez || 0,
+  //   position: props.position || 'absolute',
+  //   background: props.background || 'white',
+  // })
 
   // const [myIntForRendering, setMyIntForRendering] =  useState(0)
 
@@ -98,10 +114,10 @@ const DynamicWindow = (props: any) => {
   // console.log(props.componentEnabled)
   if(props.componentEnabled) {
     return (
-      <WindowContainer>
+      <div className="dynamic-window-container" style={containerStyle}>
 
-        <div className="tap-components-container">
-          HI !!!
+        <div className="dynamic-window-components-container" style={{width: '100%', height: '100%',}}>
+
           {
             (props.components != null && props.components.length > 0) ?
               <ComponentsRenderer system={props.system} components={props.components} />
@@ -111,7 +127,7 @@ const DynamicWindow = (props: any) => {
 
         </div>
 
-      </WindowContainer>
+      </div>
     )
   }
   else {

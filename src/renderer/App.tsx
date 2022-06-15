@@ -10,9 +10,13 @@ import '@fontsource/roboto/700.css';
 import './App.css';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { CssBaseline, Button } from '@mui/material';
+// import styled from 'styled-components'
 
 import Tap from './components/Tap/Tap'
 import ComponentsRenderer from './components/ComponentsRenderer'
+import Util from './Util'
+
+
 
 var appGlobalState: any = null
 
@@ -32,6 +36,8 @@ const darkTheme = createTheme({
     // mode: 'dark',
   },
 })
+
+
 
 
 
@@ -58,7 +64,7 @@ const DefaultView = () => {
     // Get the settings.jsonc loaded from electron main application through ipcRenderer.
     // We then load our front-end React UI based on the settings.jsonc configuration.
     window.electron.ipcRenderer.sendMessage('get-settings-json', ['ping']);
-    window.electron.ipcRenderer.once('get-settings-json', (arg :any) => {
+    window.electron.ipcRenderer.once('get-settings-json', (arg :any) => { // add a one time listener
       // console.log(arg);
       if(arg != null && arg.default != null) {
         setProfiles(arg)
@@ -77,7 +83,48 @@ const DefaultView = () => {
 
   // systemCommand handles all system commands. This function will handle the big work.
     command: (command: string, options = null) => {
-      
+
+      // Send key/key combo to currently hovered app
+      // if(command.indexOf("SYSTEM_NET_SEND_KEYS") != -1) {  // send across net
+      if(command.indexOf("SYSTEM_SEND_KEYS") != -1) {
+
+        let keysToSend = command.split('SYSTEM_SEND_KEYS ')[1].split(' ')
+
+        let sendKeyBatchProgramParamStr = Util.getSendKeyBatchStr(keysToSend)  
+
+        // window.electron.ipcRenderer.sendMessage('system-send-key', {
+        //   command: sendKeyBatchProgramParamStr,
+        //   callback: (stdout) => {}
+        // })
+        window.electron.ipcRenderer.sendMessage(
+          'system-send-key', 
+          sendKeyBatchProgramParamStr,
+          // (stdout) => {}
+        )
+
+
+        // let childComponentId = commandParams[0]
+        // let componentProp = commandParams[1]
+        // let newValue = commandParams[2]
+
+        // let firstCommandParam = 
+        console.log(sendKeyBatchProgramParamStr)
+      }
+      else if(command.indexOf("SYSTEM_NETWORK_SEND_KEYS") != -1) {
+        let keysToSend = command.split('SYSTEM_NETWORK_SEND_KEYS ')[1].split(' ')
+        let sendKeyBatchProgramParamStr = Util.getSendKeyBatchStr(keysToSend)  
+
+        window.electron.ipcRenderer.sendMessage(
+          'system-net-send-key', 
+          sendKeyBatchProgramParamStr,
+        )
+
+        // console.log(sendKeyBatchProgramParamStr)
+      }
+      else {
+        // this.sendMessage(`Unknown command: ${command}`) // compiler angry: this.sendmessage undefined
+        console.log(`Unknown command: ${command}`)
+      }
     },
     
   // Displays a nice looking message using material UI
@@ -92,53 +139,49 @@ const DefaultView = () => {
 
   return (
     // <div style={{background: 'black'}}>
-    <div>
+    <div className="app-container" style={{width: '100vw', height: '100vh', }}>
 
-      <div className="app-container">
+      
+      {
+        (profiles != null) ? 
+          <ComponentsRenderer system={system} components={profiles[currentProfile].components} />
+          :
+          null
+      }
 
-        
-        {
-          (profiles != null) ? 
-            <ComponentsRenderer system={system} components={profiles[currentProfile].components} />
-            :
-            null
-        }
+      {/* {
+        (profiles != null) ? 
+          profiles[currentProfile].components.map((component: object, index: number) => {
 
-        {/* {
-          (profiles != null) ? 
-            profiles[currentProfile].components.map((component: object, index: number) => {
+            if(component != null) {
 
-              if(component != null) {
-
-                // store global state for saving if not loaded from globalstate.json
-                if(loadedGlobalStateFromJSONFile == false) {
-                  if(component.props != null && component.state != null && component.componentId != null) {
-                    appGlobalState[component.componentId] = component.props.state
-                  }
-                }
-
-                if(component.componentId == 'some unique component') {
-                }
-                else {
-                  let DynamicComponent: object = dynamicComponents[component.componentId]
-                  return (
-                    <DynamicComponent {...component.props} 
-                      key={component.componentId + '--' + index} 
-                      componentId={index} 
-                      system={system} 
-                      />
-                  )
+              // store global state for saving if not loaded from globalstate.json
+              if(loadedGlobalStateFromJSONFile == false) {
+                if(component.props != null && component.state != null && component.componentId != null) {
+                  appGlobalState[component.componentId] = component.props.state
                 }
               }
 
-            })
-            :
-            null
-        } */}
+              if(component.componentId == 'some unique component') {
+              }
+              else {
+                let DynamicComponent: object = dynamicComponents[component.componentId]
+                return (
+                  <DynamicComponent {...component.props} 
+                    key={component.componentId + '--' + index} 
+                    componentId={index} 
+                    system={system} 
+                    />
+                )
+              }
+            }
 
-      </div>  
+          })
+          :
+          null
+      } */}
 
-    </div>
+    </div>  
         // {/* <Button variant="outlined">Hello</Button> */}
   );
 };

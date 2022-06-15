@@ -6,13 +6,19 @@ import '@fontsource/roboto/300.css';
 import '@fontsource/roboto/400.css';
 import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
-import { styled } from '@mui/material/styles';
+// import { styled } from '@mui/material/styles';
 // import './App.css';
 // import { Button } from '@mui/material';
+import styled from 'styled-components'
 
 import Tap from './Tap/Tap'
 import DynamicWindow from './DynamicWindow/DynamicWindow'
 
+const DivComponentsContainer = styled.div`
+  position: relative;
+  width: 100%;
+  height: 100%;
+`
 
 const ComponentsRenderer = (props: any) => {
   // console.log(props)
@@ -33,7 +39,7 @@ const ComponentsRenderer = (props: any) => {
 
 // console.log(props)
   return (
-    <div className="components-container">
+    <DivComponentsContainer>
       {
         (props.components != null) ? 
           props.components.map((component: any, index: number) => {
@@ -77,7 +83,7 @@ const ComponentsRenderer = (props: any) => {
           :
           null
       }
-    </div>
+    </DivComponentsContainer>
   );
 };
 

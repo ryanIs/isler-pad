@@ -1,41 +1,75 @@
 {
   "default": {
+    "system": {
+      "electrionWindowTitle": "Isler Pad",
+      "electrionWindowWidth": 1600,
+      "electrionWindowHeight": 900,
+      "isNetworkHost": false,
+      "networkHostName": "localhost",
+      "networkPort": 43591
+    },
     "defaultProfile": true,
     "associatedPrograms": [],
     "components": [
       {
         "componentId": "Tap",
         "props": {
-          "name": "CTRL C",
+          "name": "a",
           "id": "copy-tap",
-          "width": "50px",
-          "height": "50px",
-          "left": "100px",
-          "top": "100px",
-          "z-index": 0,
+          "containerCSS": {
+            "width": "70px",
+            "height": "70px",
+            "left": "5px",
+            "bottom": "15px",
+            "position": "absolute",
+            // "top": "100px",
+            "zIndex": 0
+          },
           "innerHTML": "Tap me!",
-          "CSSThemeOveride": "blue",
+          "CSSThemeOverride": {
+            "color": "blue",
+            "default": 500,
+            "hover": 700
+          },
           "state": {},
           "options": {
-            "tapWaitIntervalMS": 300
+            "defaultTapWaitIntervalMS": 300
           }, 
-          "CSS": { 
-            "button": {}
-          },
+          // "CSS": { // todo: if CSS defined, ignore cssThemOverride and do custom css (e.g. border, etc)
+          // },
           "componentEnabled": true,
           "taps": [
             {  
+              // tapWaithInterval // todo: if -1, do not allow any additional taps
+              // "onTouchStart": {}, // todo (e.g. press to hold sending repeating key, release to stop)
               "onTouchEnd": {
-                "default": "SYSTEM_SEND_KEYS LEFT_CONTROL C",
+                "default": [
+                  {
+                    "command": "SYSTEM_NETWORK_SEND_KEYS ^c"
+                    // "command": "SYSTEM_SEND_KEYS ^p"
+                    // "command": "SYSTEM_SEND_KEYS ^v"
+                    // "timeoutMS": 0
+                  }
+                ],
                 "control": "",
                 "control alt": "", 
                 "alt": ""
               },
               "onTouchHeld": {
-                "default": "SYSTEM_SELF_SET_COMPONENT_PROP copy-tap.copy-dynamic-window-tap-0 componentEnabled true"
+                "default": [
+                  {
+                    "command": "SYSTEM_SELF_SET_COMPONENT_PROP copy-tap.copy-dynamic-window-tap-0 componentEnabled true",
+                    "timeoutMS": 0
+                  }
+                ]
               },
               "onTouchHeldOutside": {
-                "default": "SYSTEM_SELF_GET_FUNCTION SYSTEM_CONST_SAME_OBJECT onTouchHeld"
+                "default": [
+                  {
+                    "command": "SYSTEM_SELF_GET_FUNCTION SYSTEM_CONST_SAME_OBJECT onTouchHeld",
+                    "timeoutMS": 0
+                  }
+                ]
               }
             }
           ],
@@ -45,18 +79,32 @@
               "props": {
                 "id": "copy-tap.copy-dynamic-window-tap-0",
                 "name": "left control highlight window",
-                "z-index": 1000,
-                "left": "0",
-                "top": "0",
-                "width": "100px",
-                "height": "100px",
-                "CSSThemeOveride": "default",
+                "containerCSS": {
+
+                  "zIndex": 1000,
+                  "left": "0px",
+                  "top": "-145px",
+                  "width": "145px",
+                  "height": "145px",
+                  "position": "absolute",
+                  "border": "1px solid #aaa",
+                  "background": "#eee"
+                },
+                "CSSThemeOverride": {
+                  "color": "default",
+                  "default": 500,
+                  "hover": 700
+                },
                 "CSS": {},
                 "state": {
                   
                 },
                 "componentEnabled": false,
-                "casterOnTouchEnd": "SYSTEM_SELF_SET_COMPONENT_PROP copy-tap.copy-dynamic-window-tap-0 componentEnabled false",
+                "casterOnTouchEnd": [
+                  {
+                    "command": "SYSTEM_SELF_SET_COMPONENT_PROP copy-tap.copy-dynamic-window-tap-0 componentEnabled false"
+                  }
+                ],
                 // "componentEnabled": true,
                 "components": [
                   {
@@ -68,12 +116,22 @@
                       "componentId": "Tap",
                       // having this defined means it's type is 'release-only'. this means no taps[] array
                       "innerHTML": "Tap me 222!",
-                      "left": "50",
-                      "top": "50",
-                      "CSSThemeOveride": "red",
+                      "containerCSS": {
+                        "left": "0",
+                        "top": "0"
+                      },
+                      "CSSThemeOverride": {
+                        "color": "red",
+                        "default": 500,
+                        "hover": 700
+                      },
                       "componentEnabled": true,
                       "onTouchEnd": {
-                        "default": "SYSTEM_SEND_KEYS LEFT_CONTROL P"
+                        "default": [
+                          {
+                            "command": "SYSTEM_NETWORK_SEND_KEYS ^a"
+                          }
+                        ]
                       },
                       "onAfterAnyTouchProcedure": "SYSTEM_REMOVE_MY_PARENT" // ran after any of this props events have fired.
                     }
@@ -82,17 +140,32 @@
                   {
                     "componentId": "Tap",
                     "props": {
-                    "componentEnabled": true,
+                      "componentEnabled": true,
                       "id": "copy-tap.copy-window.tap-bbb",
-                      "name": "component name bbb",
+                      "name": "CTRL A",
                       // having this defined means it's type is 'release-only'. this means no taps[] array
                       "innerHTML": "Tap me 333!",
-                      "left": "70",
-                      "top": "70",
+                      "containerCSS": {
+                        // "left": "70",
+                        // "top": "70"
+                        // "left": "none",
+                        // "top": "none",
+                        "right": "1px",
+                        // "bottom": "none"
+                        "bottom": "0"
+                      },
                       "state": {},
-                      "CSSThemeOveride": "green",
+                      "CSSThemeOverride": {
+                        "color": "green",
+                        "default": 500,
+                        "hover": 700
+                      },
                       "onTouchEnd": {
-                        "default": "SYSTEM_SEND_KEYS LEFT_CONTROL A"
+                        "default": [
+                          {
+                            "command": "SYSTEM_NETWORK_SEND_KEYS ^v"
+                          }
+                        ]
                       },
                       "onAfterAnyTouchProcedure": "SYSTEM_REMOVE_MY_PARENT" // ran after any of this props events have fired.
                     }
@@ -108,14 +181,20 @@
         "props": {
           "name": "nothingLol",
           "id": "copy-tap222",
-          "width": "50px",
-          "height": "50px",
-          "left": "100px",
-          "top": "100px",
-          "z-index": 0,
+          "containerCSS": {
+            // "width": "50px",
+            // "height": "50px",
+            "left": "100px",
+            "top": "100px",
+            "zIndex": 0
+          },
           "componentEnabled": true,
           "innerHTML": "Tap me22!",
-          "CSSThemeOveride": "blue",
+          "CSSThemeOverride": {
+            "color": "blue",
+            "default": 500,
+            "hover": 700
+          },
           "state": {
             "enabled": 1
           },
@@ -126,7 +205,12 @@
           "taps": [
             {
               "onTouchEnd": {
-                "default": "SYSTEM_SEND_KEYS LEFT_CONTROL DDDD",
+                "default": [
+                  {
+                    "command": "SYSTEM_NETWORK_SEND_KEYS ^c"
+                    // "timeoutMS": 0
+                  }
+                ],
                 "control": "",
                 "control alt": "",
                 "alt": ""

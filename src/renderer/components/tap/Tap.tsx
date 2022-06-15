@@ -1,5 +1,6 @@
 import { useState, 
   useEffect,
+  useRef,
 } from 'react';
 import icon from '../../assets/icon.svg';
 import '@fontsource/roboto/300.css';
@@ -11,17 +12,20 @@ import { styled } from '@mui/material/styles';
 // import { Button } from '@mui/material';
 import Button, { ButtonProps } from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
-import { purple } from '@mui/material/colors';
 
 import ComponentsRenderer from '../ComponentsRenderer'
 import Util from '../../Util'
 
-const ColorButton = styled(Button)<ButtonProps>(({ theme }) => ({
-  color: theme.palette.getContrastText(purple[500]),
-  backgroundColor: purple[500],
+const ColorButton = styled(Button)<ButtonProps>(({ theme, CSSThemeOverride }) => ({
+  color: theme.palette.getContrastText(Util.getMUIColorObject(CSSThemeOverride.color)[CSSThemeOverride.default]),
+  backgroundColor: Util.getMUIColorObject(CSSThemeOverride.color)[CSSThemeOverride.default],
   '&:hover': {
-    backgroundColor: purple[700],
+    backgroundColor: Util.getMUIColorObject(CSSThemeOverride.color)[CSSThemeOverride.hover],
   },
+  width: '100%',
+  height: '100%',
+  overflowWrap: 'break-word',
+  wrap: 'break-word',
 }));
 
 let taps: number = -1
@@ -31,6 +35,9 @@ let tapDown: Boolean = false
 let casterOnTouchEndCommand: any = null
 let casterOnTouchStartCommand: any = null
 
+// systemMacros stored by first macro command string name.
+// Can be used to stop a running macro (get by EXACT first command string match)
+let systemMacros = {}
 
 /**
  * Default View is the main view that the react router loads.
@@ -45,6 +52,25 @@ const Tap = (props: any) => {
   //   e.g. text stored in a component/radio buttons/boolean on/off switch/MIDI slider x of 128.
   //   this stuff gets saved to a JSON file (in same folder/computer as application)
   const [state, setState] = useState(props.state || {})
+
+  
+  const [tapContainerStyle, setTapContainerStyle] = useState( Util.containerCSSDefaultsHandler(props.containerCSS) )
+
+  // console.log(props)
+  // console.log(tapContainerStyle)
+
+  // todo: setup defaulter func to pass through to get those || defaults
+  // const [tapContainerStyle, setTapContainerStyle] = useState({
+  //   width: props.width || '50px',
+  //   height: props.height || '50px',
+  //   top: props.top || 'none',
+  //   left: props.left || 'none',
+  //   right: props.right || 'none',
+  //   bottom: props.bottom || 'none',
+  //   zIndex: props.zIndez || 0,
+  //   position: props.position || 'absolute',
+  // })
+  
 
   // const forceUpdate = useForceUpdate()
 
@@ -81,17 +107,17 @@ const Tap = (props: any) => {
       )
       setMyComponents(newComponentsArray)
       // todo: set x, y, and width height if needed
-      console.log("newValue: " + newValue)
-console.log(
-  Util.getvarBEnsureSameType(
-    newComponentsArray[targetComponentIndex].props[componentProp],
-    newValue
-  )
-)
+      // console.log("newValue: " + newValue)
+// console.log(
+//   Util.getvarBEnsureSameType(
+//     newComponentsArray[targetComponentIndex].props[componentProp],
+//     newValue
+//   )
+// )
       if(tapDown && newComponentsArray[targetComponentIndex].props?.casterOnTouchEnd != null) {
         casterOnTouchEndCommand = newComponentsArray[targetComponentIndex].props?.casterOnTouchEnd
-        console.log(casterOnTouchEndCommand)
-        console.log(tapDown)
+        // console.log(casterOnTouchEndCommand)
+        // console.log(tapDown)
       }
       
       // props.components[childComponentId]
@@ -108,24 +134,52 @@ console.log(
       // setName('lol')
     }
 
+    else if(command.indexOf("SYSTEM_SELF_CONSOLE_LOG") != -1) {
+        let msg = command.split('SYSTEM_SELF_CONSOLE_LOG ')[1]
+        // let message = commandParams[1]
+  
+      console.log(msg)
+    }
+
     else {
 
     }
 
   }
 
-  const componentEventHandler = (customEvent: CustomEvent) => {
-    if(customEvent.detail?.value != null) {
-      let myCommand = customEvent.detail?.value
+  const commandStringHandler = (commandString) => {
+
+    if(commandString != null) {
+      let myCommand = commandString
       if(myCommand.indexOf('SYSTEM_SELF') != -1) {
         systemSelfCommand(myCommand)
       }
       else {
       // else if(myCommand.indexOf('SYSTEM_SELF')) {
-        // system.command()
+        props.system.command(myCommand, {
+          senderComponentId: props.id,
+        })
       }
     }
 
+  }
+
+  const storeMacroTimeouts = (macroObject) => {
+    let macroId = macroObject.firstCommand
+    systemMacros[macroId] = macroObject
+    // Util.stopMacroTimeoutsForMacroId('SYSTEM_SELF_CONSOLE_LOG lol')
+  }
+
+  const componentEventHandler = (customEvent: CustomEvent) => {
+    if(customEvent.detail?.value != null) {
+
+      storeMacroTimeouts(
+        Util.commandMacroHandler(customEvent.detail?.value, (outputCommandStr: string) => {
+          commandStringHandler(outputCommandStr)
+        })
+      )
+    
+    }
     // console.log(customEvent.detail)
     // console.log(state)
   }
@@ -206,15 +260,19 @@ console.log(
   //   }
   // }
 
-  
 
-  const touchStartHandler = (touchEvent: any) => {
+  const interactStartHandler = (interactionType: string = 'touch', ...args) => {
+    
     // touchEvent.preventDefault()
     
+        // tapWaithInterval // todo: if -1, do not allow any additional taps
+    // "onTouchStart": {}, // todo (e.g. press to hold sending repeating key, release to stop)
+
+
     ++taps
 
     removeTapTimeout()
-    tapTimeout = setTimeout(() => {tapAction(taps, 'timeout')}, props?.options?.tapWaitIntervalMS || 400); // todo: this options? question mark syntax helps mitigate JSON missings that CAN be defaults; but shouldn't always for required ones - then should crash rightlyso (with error message)
+    tapTimeout = setTimeout(() => {tapAction(taps, 'timeout')}, props?.options?.defaultTapWaitIntervalMS || 400); // todo: this options? question mark syntax helps mitigate JSON missings that CAN be defaults; but shouldn't always for required ones - then should crash rightlyso (with error message)
 
     tapDown = true
 
@@ -223,10 +281,35 @@ console.log(
       runSelfEvent(casterOnTouchStartCommand)
       casterOnTouchStartCommand = null
     }
+
   }
 
-  const touchEndHandler = (touchEvent: any) => {
-    touchEvent.preventDefault()
+  const interactEndHandler = (interactionType: string = 'touch', ...args) => {
+    //     console.log(
+    //   document.elementFromPoint(touchEvent.changedTouches[0].clientX, touchEvent.changedTouches[0].clientY)
+    // )
+
+    // todo: changedTouches[x] for multiple touches
+    // console.log(args[0])
+    // Run command if released on an external component with onTouchEnd available.
+    let newEle
+    if(interactionType == 'mouse') {
+      newEle = document.elementFromPoint(args[0].clientX, args[0].clientY)
+    }
+    else {
+      newEle = document.elementFromPoint(args[0].changedTouches[0].clientX, args[0].changedTouches[0].clientY)
+    }
+    let externalTouchEndCommand = newEle?.getAttribute('systemontouchend')
+
+    if(newEle != null && externalTouchEndCommand != null && myButtonDOMRef.current != newEle) {
+      externalTouchEndCommand = JSON.parse(externalTouchEndCommand)
+      runSelfEvent(externalTouchEndCommand)
+    }
+
+    // console.log(newEle?.getAttribute('systemontouchend'))
+    // console.log(myButtonDOMRef)
+    // console.log(myButtonDOMRef.current == newEle) // returns true if released on same element
+
     // console.log(touchEvent)
 
     // if(taps == 0) {
@@ -235,12 +318,13 @@ console.log(
     // removeTapTimeout()
     tapDown = false
 
-    console.log(casterOnTouchEndCommand)
     if(casterOnTouchEndCommand != null) {
       runSelfEvent(casterOnTouchEndCommand)
       casterOnTouchEndCommand = null
+      // console.log(55)
     }
     // get element released on (CANT HAVE ANY WEIRD ELEMENTS ABOVE THIS ONE!! (z-index important))
+    
     // console.log(
     //   document.elementFromPoint(touchEvent.changedTouches[0].clientX, touchEvent.changedTouches[0].clientY)
     // )
@@ -252,6 +336,30 @@ console.log(
 
     // window.dispatchEvent(myEventToDispatch)
     // console.log(newEle?.getAttribute('systemontouchend'))
+  }
+
+  
+
+  const mouseEndHandler = (mouseEvent: any) => {
+    interactEndHandler('mouse', mouseEvent)
+    window.removeEventListener("mouseup", mouseEndHandler, false)
+  }
+
+  const mouseStartHandler = (mouseEvent: any) => {
+    interactStartHandler('mouse', mouseEvent)
+    window.addEventListener("mouseup", mouseEndHandler, false) // Use mouseup to be exactly like how touchEnd functions (pinged from same element as down)
+  }
+
+  const touchStartHandler = (touchEvent: any) => {
+    interactStartHandler('touch', touchEvent)
+  }
+
+  const myButtonDOMRef = useRef(null)
+
+  const touchEndHandler = (touchEvent: any) => {
+    touchEvent.preventDefault()
+
+    interactEndHandler('touch', touchEvent)
   }
 
 
@@ -281,14 +389,22 @@ console.log(
 
 
   // console.log(props)
-  if(props.componentEnabled) {
+  if(props.componentEnabled) {  // or null probably (default to always enabled)
       return (
-        <div>
+        <div className="tap-container" style={tapContainerStyle}>
 
           <ColorButton 
             onTouchStart={touchStartHandler} 
             onTouchEnd={touchEndHandler} 
+            onMouseDown={mouseStartHandler}
+            // onMouseUp={mouseEndHandler}
+            CSSThemeOverride={props.CSSThemeOverride}
+            componentid={props.id}
+            systemontouchend={(props.onTouchEnd == null ? null : JSON.stringify(props.onTouchEnd.default))}
+            ref={myButtonDOMRef}
           >
+            {/* https://stackoverflow.com/questions/4165836/javascript-scale-text-to-fit-in-fixed-div */}
+            {/* <span dangerouslySetInnerHTML={{__html: name}}> </span> */}
             {name}
           </ColorButton>
 
