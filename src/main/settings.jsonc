@@ -2,19 +2,21 @@
   "default": {
     "system": {
       "electrionWindowTitle": "Isler Pad",
-      "electrionWindowWidth": 1600,
-      "electrionWindowHeight": 900,
+      "electrionWindowWidth": 1500,
+      "electrionWindowHeight": 1028,
       "isNetworkHost": false,
       "networkHostName": "localhost",
       "networkPort": 43591
     },
-    "defaultProfile": true,
-    "associatedPrograms": [],
+    "profileOptions": {
+      "defaultProfile": true,
+      "persistantProfile": false, // If true, this profile will persist through focused application changes
+      "associatedPrograms": []
+    },
     "components": [
       {
-        "componentId": "Tap",
         "props": {
-          "name": "a",
+          "JSComponentId": "Tap",
           "id": "copy-tap",
           "containerCSS": {
             "width": "70px",
@@ -25,19 +27,22 @@
             // "top": "100px",
             "zIndex": 0
           },
-          "innerHTML": "Tap me!",
-          "CSSThemeOverride": {
+          "UIState": {
             "color": "blue",
-            "default": 500,
-            "hover": 700
+            "colorDefault": 500,
+            "colorHover": 700
           },
-          "state": {},
+          "mainState": {
+            "name": "a",
+            "componentEnabled": true,
+            "headerHTML": "" // simple html that gets added to top of tap (can be/do anything custom)
+  
+          }, // a react state that gets saved to a different JSOn file; (this is load/default)/ for e.g. text content, yes/no toggle bool, midi slider 0-128 etc 
           "options": {
             "defaultTapWaitIntervalMS": 300
           }, 
           // "CSS": { // todo: if CSS defined, ignore cssThemOverride and do custom css (e.g. border, etc)
           // },
-          "componentEnabled": true,
           "taps": [
             {  
               // tapWaithInterval // todo: if -1, do not allow any additional taps
@@ -58,7 +63,7 @@
               "onTouchHeld": {
                 "default": [
                   {
-                    "command": "SYSTEM_SELF_SET_COMPONENT_PROP copy-tap.copy-dynamic-window-tap-0 componentEnabled true",
+                    "command": "SYSTEM_SELF_SET_COMPONENT_MAIN_STATE copy-tap.copy-dynamic-window-tap-0 componentEnabled true",
                     "timeoutMS": 0
                   }
                 ]
@@ -75,10 +80,9 @@
           ],
           "components": [
             {
-              "componentId": "DynamicWindow",
               "props": {
+                "JSComponentId": "DynamicWindow",
                 "id": "copy-tap.copy-dynamic-window-tap-0",
-                "name": "left control highlight window",
                 "containerCSS": {
 
                   "zIndex": 1000,
@@ -90,42 +94,43 @@
                   "border": "1px solid #aaa",
                   "background": "#eee"
                 },
-                "CSSThemeOverride": {
+                "UIState": {
                   "color": "default",
-                  "default": 500,
-                  "hover": 700
+                  "colorDefault": 500,
+                  "colorHover": 700
                 },
                 "CSS": {},
-                "state": {
-                  
+                "mainState": {
+                  "name": "left control highlight window",
+                  "componentEnabled": false
+  
                 },
-                "componentEnabled": false,
                 "casterOnTouchEnd": [
                   {
-                    "command": "SYSTEM_SELF_SET_COMPONENT_PROP copy-tap.copy-dynamic-window-tap-0 componentEnabled false"
+                    "command": "SYSTEM_SELF_SET_COMPONENT_MAIN_STATE copy-tap.copy-dynamic-window-tap-0 componentEnabled false"
                   }
                 ],
                 // "componentEnabled": true,
                 "components": [
                   {
-                    "componentId": "Tap",
                     "props": {
-                      "state": {},
-                      "name": "component name 22",
+                      "JSComponentId": "Tap",
                       "id": "copy-tap.copy-window.tap-22",
-                      "componentId": "Tap",
                       // having this defined means it's type is 'release-only'. this means no taps[] array
-                      "innerHTML": "Tap me 222!",
                       "containerCSS": {
                         "left": "0",
                         "top": "0"
                       },
-                      "CSSThemeOverride": {
+                      "UIState": {
                         "color": "red",
-                        "default": 500,
-                        "hover": 700
+                        "colorDefault": 500,
+                        "colorHover": 700
                       },
-                      "componentEnabled": true,
+                      "mainState": {
+                        "name": "component name 22",
+                        "headerHTML": "",
+                        "componentEnabled": true
+                      },
                       "onTouchEnd": {
                         "default": [
                           {
@@ -138,13 +143,10 @@
                   },
 
                   {
-                    "componentId": "Tap",
                     "props": {
-                      "componentEnabled": true,
+                      "JSComponentId": "Tap",
                       "id": "copy-tap.copy-window.tap-bbb",
-                      "name": "CTRL A",
                       // having this defined means it's type is 'release-only'. this means no taps[] array
-                      "innerHTML": "Tap me 333!",
                       "containerCSS": {
                         // "left": "70",
                         // "top": "70"
@@ -154,11 +156,15 @@
                         // "bottom": "none"
                         "bottom": "0"
                       },
-                      "state": {},
-                      "CSSThemeOverride": {
+                      "mainState": {
+                        "componentEnabled": true,
+                        "name": "CTRL A",
+                        "headerHTML": ""
+                      },
+                      "UIState": {
                         "color": "green",
-                        "default": 500,
-                        "hover": 700
+                        "colorDefault": 500,
+                        "colorHover": 700
                       },
                       "onTouchEnd": {
                         "default": [
@@ -177,9 +183,73 @@
         }
       },
       {
-        "componentId": "Tap",
         "props": {
-          "name": "nothingLol",
+          "JSComponentId": "ISlider",
+          "id": "volume-slider",
+          "containerCSS": {
+            "width": "70px",
+            "height": "350px",
+            "left": "200px",
+            "top": "200px",
+            "zIndex": 0
+          },
+          "UIState": {
+            "sliderMin": 0,
+            "sliderMax": 100,
+            // "valueLabelDisplay": "none",
+            "valueLabelDisplay": "auto",
+
+          // "step": 10, // slider steps
+            "color": "green",
+            "colorDefault": 500,
+            "colorTrack": 700
+            // root:   margin:   thumb:   mark:   rail:   track:   valueLabel: 
+          },
+          "onValueChanged": {
+            "default": [
+              {
+                "command": "SYSTEM_CHANGE_VOLUME SYSTEM_SELF_GET_VALUE"
+                // "timeoutMS": 0
+              }
+            ]
+          },
+          "mainState": {
+            "value": 50,
+            "name": "waea",
+            "componentEnabled": true
+          },
+          "options": {
+            "tapWaitIntervalMS": 400
+          }
+        }
+      },
+      
+      {
+        "props": {
+          "dynamicComponentId": "YouDraw",
+          "id": "youDraw-app",
+          "containerCSS": {
+            "width": "500px",
+            "height": "500px",
+            "left": "500px",
+            "top": "200px",
+            "zIndex": 0
+          },
+          "UIState": {
+            "color": "green"
+          },
+          "mainState": {
+            "name": "YouDraw",
+            "componentEnabled": true
+          },
+          "options": {
+          }
+        }
+      },
+
+      {
+        "props": {
+          "JSComponentId": "Tap",
           "id": "copy-tap222",
           "containerCSS": {
             // "width": "50px",
@@ -188,15 +258,16 @@
             "top": "100px",
             "zIndex": 0
           },
-          "componentEnabled": true,
-          "innerHTML": "Tap me22!",
-          "CSSThemeOverride": {
-            "color": "blue",
-            "default": 500,
-            "hover": 700
+          "UIState": {
+            "color": "purple",
+            "colorDefault": 500,
+            "colorHover": 700
           },
-          "state": {
-            "enabled": 1
+          "mainState": {
+            "enabled": 1,
+            "name": "japanese",
+            "componentEnabled": true,
+            "headerHTML": ""
           },
           "options": {
             "tapWaitIntervalMS": 400
@@ -207,7 +278,8 @@
               "onTouchEnd": {
                 "default": [
                   {
-                    "command": "SYSTEM_NETWORK_SEND_KEYS ^c"
+                    "command": "SYSTEM_SET_COMPONENT_MAIN_STATE youDraw-app componentEnabled SYSTEM_TOGGLE"
+                    // "command": "SYSTEM_NETWORK_SEND_KEYS ^c"
                     // "timeoutMS": 0
                   }
                 ],
@@ -222,5 +294,54 @@
     ]
   },
   
-  "vscode": {}
+  "vscode": {
+    "profileOptions": {
+      "associatedPrograms": [
+        "Visual Studio Code"
+      ]
+    },
+    "components": [
+      {
+        "props": {
+          "JSComponentId": "Tap",
+          "id": "copy-tap",
+          "containerCSS": {
+            "width": "70px",
+            "height": "70px",
+            "left": "5px",
+            "bottom": "15px",
+            "position": "absolute",
+            // "top": "100px",
+            "zIndex": 0
+          },
+          "UIState": {
+            "color": "blue",
+            "colorDefault": 500,
+            "colorHover": 700
+          },
+          "mainState": {
+            "headerHTML": "",
+            "componentEnabled": true,
+            "name": "a"
+          }, // a react state that gets saved to a different JSOn file; (this is load/default)/ for e.g. text content, yes/no toggle bool, midi slider 0-128 etc 
+          "options": {
+            "defaultTapWaitIntervalMS": 300
+          }, 
+          "taps": [
+            {
+            "onTouchEnd": {
+              "default": [
+                {
+                  // "command": "SYSTEM_NETWORK_SEND_KEYS ^c"
+                  "command": "SYSTEM_SEND_KEYS ^p"
+                  // "command": "SYSTEM_SEND_KEYS ^v"
+                }
+              ]
+            }
+          }
+          ]
+        }
+      }
+    ]
+  }
 }

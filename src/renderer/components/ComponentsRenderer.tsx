@@ -12,7 +12,7 @@ import '@fontsource/roboto/700.css';
 import styled from 'styled-components'
 
 import Tap from './Tap/Tap'
-import DynamicWindow from './DynamicWindow/DynamicWindow'
+// import DynamicWindow from './DynamicWindow/DynamicWindow'
 
 const DivComponentsContainer = styled.div`
   position: relative;
@@ -23,10 +23,6 @@ const DivComponentsContainer = styled.div`
 const ComponentsRenderer = (props: any) => {
   // console.log(props)
   
-  const dynamicComponentsArray: object = {
-    'Tap': Tap,
-    'DynamicWindow': DynamicWindow,
-  }
 
   // const [myIntForRendering, setMyIntForRendering] =  useState(0)
 
@@ -48,35 +44,21 @@ const ComponentsRenderer = (props: any) => {
 
               // store global state for saving if not loaded from globalstate.json
               if(props.system.loadedGlobalStateFromJSONFile == false) {
-                if(component.props != null && component.state != null && component.componentId != null) {
-                  props.system.appGlobalState[component.componentId] = component.props.state
+                if(component.props != null && component.state != null && component.props.id != null) {
+                  props.system.appGlobalState[component.props.id] = component.props.state
                 }
               }
 
-              if(component.componentId == 'some unique component') {
-              }
-              else {
-                let MyCustomComponent: object = dynamicComponentsArray[component.componentId]
-                if(MyCustomComponent != null) {
-                  return (
-                      <MyCustomComponent
-                        {...component.props}
-                        // key={component.props.componentEnabled}
-                        key={component.props.id + '--' + index}
-                        componentId={index}
-                        system={props.system}
-                      />
-                  )
-                }
-
-                else {
-                  console.log("DynamicComponent is null...")
-                  console.log("DynamicComponent is null...")
-                  console.log("DynamicComponent is null...")
-                  console.log(MyCustomComponent)
-                  console.log(dynamicComponentsArray)
-                }
-              }
+              return (
+                  <Tap
+                    {...component.props}
+                    // key={component.props.componentEnabled}
+                    key={component.props.id + '--' + index}
+                    componentsIndex={index}
+                    system={props.system}
+                  />
+              )
+                
             }
 
           })

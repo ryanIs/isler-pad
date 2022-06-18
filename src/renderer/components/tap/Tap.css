@@ -1,0 +1,27 @@
+/*
+ * @NOTE: Prepend a `~` to css file paths that are in your node_modules
+ *        See https://github.com/webpack-contrib/sass-loader#imports
+ */
+
+/* slider width OVERRIDE CSS */
+/* todo: move to tap for universal component */
+.MuiSlider-vertical {
+  /* background-color: black; */
+  /* width: 70px !important; */
+  width: inherit !important;
+}
+
+.MuiSlider-thumb {
+  /* border-radius: 0 !important; */
+  border-radius: 7px 7px 7px 7px !important;
+  width: 75px !important;
+  height: 75px !important;
+  filter: brightness(1.5);
+  /* opacity: 0.6; */
+}
+
+.MuiSlider-vertical .MuiSlider-thumb {
+  width: 70% !important;
+  /* height: 50px !important; */
+  /* display: none; */
+}

@@ -66,9 +66,17 @@ const Util = {
     if(myCSSObj.height == undefined) {
       myCSSObj.height = '70px'
     }
+
+    // if(myCSSObj.minWidth == undefined) {
+    //   myCSSObj.minWidth = '100%'
+    // }
+
+    // if(myCSSObj.minHeight == undefined) {
+    //   myCSSObj.minHeight = '100%'
+    // }
     // etc.
 
-    if(componentId = 'DynamicWindow') {
+    if(componentId == 'DynamicWindow') {
       
       if(myCSSObj.width == undefined) {
         myCSSObj.width = '140px'
@@ -79,6 +87,14 @@ const Util = {
         myCSSObj.height = '140px'
         // myCSSObj.height = '140px'
       }
+      
+      // if(myCSSObj.minWidth == undefined) {
+      //   myCSSObj.minWidth = '100%'
+      // }
+
+      // if(myCSSObj.minHeight == undefined) {
+      //   myCSSObj.minHeight = '100%'
+      // }
 
     }
 
@@ -88,13 +104,15 @@ const Util = {
   // Returns varB but typecasted similar to varA.
   getvarBEnsureSameType(varA: any, varB: any) {
     let varAType = typeof varA
-    // console.log("varB: " + varB)
+    console.log("varB: " + varB)
+    console.log("typeof varB: " + typeof varB)
     if(varAType == 'number') {
       // return parseInt(varB)
       return Number(varB)
     }
     else if(varAType == 'boolean') {
-      return varB == 'true' || varB.toLowerCase() == 'true'
+      // return varB == 'true' || varB.toLowerCase() == 'true'
+      return varB == 'true'
     }
     else if(varAType == 'string') {
       return String(varB)
@@ -157,6 +175,10 @@ const Util = {
   },
 
   getMUIColorObject(colorStr: any) {
+    if(colorStr == null) {
+      colorStr = 'blue'
+      console.log('colorStr is null')
+    }
     return MUIColorsObj[colorStr]
   }
 

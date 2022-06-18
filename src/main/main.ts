@@ -9,7 +9,7 @@
  * `./src/main.js` using webpack. This gives us some performance wins.
  */
 import path from 'path';
-import { app, BrowserWindow, shell, ipcMain } from 'electron';
+import { app, BrowserWindow, shell, ipcMain, ipcRenderer } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import MenuBuilder from './menu';
@@ -20,6 +20,11 @@ import { jsonc } from 'jsonc'
 var exec = require('child_process').exec;
 
 import MainWebSocket from './websocket';
+import MainForeign from './foreign';
+
+// const AUTOMATIC_PROFILE_SWITCHING_ENABLED = true
+const AUTOMATIC_PROFILE_SWITCHING_ENABLED = false
+const NETWORK_ENABLED = true
 
 // isWebsocketHost determines if the host machine running this application is the host or client.
 let isWebsocketHost: boolean = false
@@ -216,6 +221,7 @@ const createWindow = async () => {
     } else {
       mainWindow.show();
     }
+    
   });
 
   mainWindow.on('closed', () => {
@@ -234,6 +240,34 @@ const createWindow = async () => {
   // Remove this if your app does not use auto updates
   // eslint-disable-next-line
   new AppUpdater();
+
+  
+  // Use ffi-napi (foreign function interface) to access user32.dll to run functions when the main window focus changes.
+  if(AUTOMATIC_PROFILE_SWITCHING_ENABLED) {
+    mainForeign = new MainForeign()
+
+    mainWindow.webContents.on('did-finish-load', () => {
+      setTimeout(() => {
+        mainForeign.onFocusedWindowChange((newWindowStr) => {
+
+          mainWindow?.webContents.send(
+            'focused-window-change', 
+            newWindowStr,
+          )
+
+        })
+        
+        mainWindow?.webContents.send(
+          'focused-window-change', 
+          mainForeign.focusedWindowTitle,
+        )
+
+      }, 2000);
+    })
+  }
+  else {
+    console.log('Note: automatic profile switching is disabled.')
+  }
 };
 
 /**
@@ -256,52 +290,10 @@ app
       // On macOS it's common to re-create a window in the app when the
       // dock icon is clicked and there are no other windows open.
       if (mainWindow === null) createWindow();
+
+      // mainWindow.webContents.openDevTools();
     });
   })
   .catch(console.log);
 
-
-// todo: net (setup so this same app can be host and client)
-
-// run sendkey.bat
-//   sendkey will send keyboard shortcuts to the machine running this program
-
-
-// let readline = require('readline');
-
-// readline.emitKeypressEvents(process.stdin);
-
-// process.stdin.on('keypress', (ch, key) => {
-//   console.log('got "keypress"', ch, key);
-//   if (key && key.ctrl && key.name == 'c') {
-//     process.stdin.pause();
-//   }
-// });
-
-// process.stdin.setRawMode(true);
-
-// const os = require('os')
-
-
-// module.exports.getGitUser = function(callback){
-//   execute("git config --global user.name", function(name){
-//       execute("git config --global user.email", function(email){
-//           callback({ name: name.replace("\n", ""), email: email.replace("\n", "") });
-//       });
-//   });
-// };
-
-
-// const { fork } = require('child_process');
-// fork(path.join(__dirname, 'send.ahk'), ['args'], {
-// 	stdio: 'pipe'
-// });
-
-// const { fork } = require('child_process');
-// fork(path.join(__dirname, 'child.js'), ['args'], {
-// 	stdio: 'pipe'
-// });
-
-
-
-
+let mainForeign

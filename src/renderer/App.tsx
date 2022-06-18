@@ -16,6 +16,7 @@ import Tap from './components/Tap/Tap'
 import ComponentsRenderer from './components/ComponentsRenderer'
 import Util from './Util'
 
+import { Slider } from '@mui/material';
 
 
 var appGlobalState: any = null
@@ -38,9 +39,6 @@ const darkTheme = createTheme({
 })
 
 
-
-
-
 /**
  * Default View is the main view that the react router loads.
  * 
@@ -49,9 +47,51 @@ const darkTheme = createTheme({
 const DefaultView = () => {
 
   const [profiles, setProfiles] = useState(null)
-  const [currentProfile, setCurrentProfile] = useState('default')
+  const [currentProfile, setCurrentProfile] = useState('default') // todo get default from profileoptions.defaultprofile
+  const [persistentProfile, setPersistentProfile] = useState(null)
 
   let loadedGlobalStateFromJSONFile = false
+
+  
+  // checkSwitchProfile Switches profiles if new application is registered as app.
+  //   todo: optimize this; seems a bit to memory intensive/poorly executed.
+  const checkSwitchProfile = (newWindowStr) => {
+// console.log(profiles)
+// console.log(profiles.default)
+// console.log(loadedGlobalStateFromJSONFile)
+
+    if(persistentProfile != null) {
+      console.log('persistentProfile detected. not switching.')
+      return
+    }
+
+    if(profiles != null) {console.log(newWindowStr)
+      let profileKeys = Object.keys(profiles)
+      let profileValues = Object.values(profiles)
+
+      for (let i = 0; i < profileValues.length; i++) {
+        const myProfile = profileValues[i];
+
+        // If new window has associated program, use that profile
+        if(myProfile.profileOptions?.associatedPrograms.findIndex(
+              programStr => (newWindowStr.indexOf(programStr) != -1)
+            ) != -1
+          ) {
+            if(currentProfile != profileKeys[i]) {
+              setCurrentProfile(profileKeys[i])
+            }
+            break
+        }
+
+        // In every other case, use default.
+        else {
+          setCurrentProfile('default')
+        }
+
+      }
+    }
+
+  }
 
   useEffect(() => {
 
@@ -64,17 +104,47 @@ const DefaultView = () => {
     // Get the settings.jsonc loaded from electron main application through ipcRenderer.
     // We then load our front-end React UI based on the settings.jsonc configuration.
     window.electron.ipcRenderer.sendMessage('get-settings-json', ['ping']);
-    window.electron.ipcRenderer.once('get-settings-json', (arg :any) => { // add a one time listener
-      // console.log(arg);
-      if(arg != null && arg.default != null) {
-        setProfiles(arg)
+    window.electron.ipcRenderer.once('get-settings-json', (profileArg :any) => { // add a one time listener
+      console.log(profileArg);
+      if(profileArg != null && profileArg.default != null) {
+        setProfiles(profileArg)
+        // console.log(profileArg)
+        // console.log(profiles)
       }
-    });
+    } , []);
+
+
+    
+  // setInterval(()=>{
+  //   console.log(profiles)
+  // }, 500)
 
     return () => {
       // on component unload here
     }
   }, [])
+
+  useEffect(() => {
+    
+    // todo: working in this useeffect, but todo probably now adding multiplie subscriptions to this on event.. need to remove for every rerender.
+    // detect focused window change (then change profile)
+    window.electron.ipcRenderer.on('focused-window-change', (newWinStrArg :any) => {
+      // console.log(newWinStrArg);
+      if(newWinStrArg != null) {
+        // let theStringHere = String(newWinStrArg)
+        // theStringHere = theStringHere.replace(/\n/, '')
+      // console.log(typeof newWinStrArg)
+      // console.log(typeof theStringHere)
+      // console.log(theStringHere);
+      // console.log(newWinStrArg);
+      // console.log(theStringHere.length);
+      // console.log(profiles)
+        checkSwitchProfile(newWinStrArg)
+      }
+    });
+
+  }, [profiles])
+
 
   const system: any = {
     loadedGlobalStateFromJSONFile: loadedGlobalStateFromJSONFile,
@@ -137,49 +207,31 @@ const DefaultView = () => {
     },
   }
 
+
   return (
     // <div style={{background: 'black'}}>
     <div className="app-container" style={{width: '100vw', height: '100vh', }}>
 
-      
+{/* <Slider
+  sx={{
+    '& input[type="range"]': {
+      WebkitAppearance: 'slider-vertical',
+    },
+  }}
+  orientation="vertical"
+  defaultValue={30}
+  aria-label="Temperature"
+  valueLabelDisplay="auto"
+  classes="testingg"
+  // onKeyDown={preventHorizontalKeyboardNavigation}
+/> */}
+
       {
         (profiles != null) ? 
           <ComponentsRenderer system={system} components={profiles[currentProfile].components} />
           :
           null
       }
-
-      {/* {
-        (profiles != null) ? 
-          profiles[currentProfile].components.map((component: object, index: number) => {
-
-            if(component != null) {
-
-              // store global state for saving if not loaded from globalstate.json
-              if(loadedGlobalStateFromJSONFile == false) {
-                if(component.props != null && component.state != null && component.componentId != null) {
-                  appGlobalState[component.componentId] = component.props.state
-                }
-              }
-
-              if(component.componentId == 'some unique component') {
-              }
-              else {
-                let DynamicComponent: object = dynamicComponents[component.componentId]
-                return (
-                  <DynamicComponent {...component.props} 
-                    key={component.componentId + '--' + index} 
-                    componentId={index} 
-                    system={system} 
-                    />
-                )
-              }
-            }
-
-          })
-          :
-          null
-      } */}
 
     </div>  
         // {/* <Button variant="outlined">Hello</Button> */}
