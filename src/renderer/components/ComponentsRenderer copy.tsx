@@ -33,20 +33,12 @@ const ComponentsRenderer = (props: any) => {
     
   // }, [props])
 
-  const [myComponents, setMyComponents] = useState(props.components || [])
-
-  useEffect(() => { 
-    // props = props
-    // console.log('CRRRRRRRRRR: updated!!')
-    setMyComponents(props.components)
-  }, [props.components])
-
 // console.log(props)
   return (
     <DivComponentsContainer>
       {
-        (myComponents != null) ? 
-          myComponents.map((component: any, index: number) => {
+        (props.components != null) ? 
+          props.components.map((component: any, index: number) => {
 
             if(component != null) {
 
@@ -57,15 +49,15 @@ const ComponentsRenderer = (props: any) => {
                 }
               }
 
-              // if(component.props.id == 'youDraw-app') {
-              //   console.log('------------ ComponetsRenderer mainState: ')
-              //   console.log(component.props.mainState)
+              if(component.props.id == 'youDraw-app') {
+                console.log('------------ ComponetsRenderer mainState: ')
+                console.log(component.props.mainState)
 
                 
-              // setInterval(() => {
-              //   console.log(component.props.mainState)
-              // }, 1000);
-              // }
+              setInterval(() => {
+                console.log(component.props.mainState)
+              }, 1000);
+              }
 
               return (
                   <Tap

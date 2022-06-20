@@ -279,6 +279,7 @@
                 "default": [
                   {
                     "command": "SYSTEM_SET_COMPONENT_MAIN_STATE youDraw-app componentEnabled SYSTEM_TOGGLE"
+                    // "command": "SYSTEM_SET_COMPONENT_MAIN_STATE youDraw-app componentEnabled true"
                     // "command": "SYSTEM_NETWORK_SEND_KEYS ^c"
                     // "timeoutMS": 0
                   }

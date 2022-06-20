@@ -104,15 +104,20 @@ const Util = {
   // Returns varB but typecasted similar to varA.
   getvarBEnsureSameType(varA: any, varB: any) {
     let varAType = typeof varA
-    console.log("varB: " + varB)
-    console.log("typeof varB: " + typeof varB)
+    let varBType = typeof varB
+    // console.log("varB: " + varB)
+    // console.log("typeof varB: " + typeof varB)
     if(varAType == 'number') {
       // return parseInt(varB)
       return Number(varB)
     }
     else if(varAType == 'boolean') {
-      // return varB == 'true' || varB.toLowerCase() == 'true'
-      return varB == 'true'
+      if(varBType == 'string' && varB.toLowerCase() == 'false' ) { // watch out for 'false'
+        return false
+      }
+      else {
+        return !!varB
+      }
     }
     else if(varAType == 'string') {
       return String(varB)

@@ -290,8 +290,8 @@ const Tap = (props: any) => {
   //   this stuff gets saved to a JSON file (in same folder/computer as application)
   const [mainState, setMainState] = useState(props.mainState || {})
   // const [mainState, setMainState] = useState()
-  console.log("INIT MAIN STATE: " + mainState?.componentEnabled)
-  console.log("mainState: " + mainState?.componentEnabled)
+  // console.log("INIT MAIN STATE: " + mainState?.componentEnabled)
+  // console.log("mainState: " + mainState?.componentEnabled)
 
   // todo: setup defaulter func to pass through to get those || defaults
   const [tapContainerStyle, setTapContainerStyle] = useState( Util.containerCSSDefaultsHandler(props.containerCSS, props.JSComponentId) )
@@ -306,7 +306,9 @@ const Tap = (props: any) => {
   // name is the label text displayed on the prop.
   const [myComponents, setMyComponents] = useState(props.components || [])
 
-  // on component mount
+  // When mainState updates.
+  // React and window events are kind of sketchy.
+  //    https://stackoverflow.com/questions/60540985/react-usestate-doesnt-update-in-window-events
   useEffect(() => {
     window.addEventListener(props.id, componentEventHandler)
     // setMainState(props.mainState || {})
@@ -315,14 +317,18 @@ const Tap = (props: any) => {
     return () => {
       window.removeEventListener(props.id, componentEventHandler)
     }
-  }, [])
+  }, [mainState])
   
   // Update main state when props changes
-  // useEffect(() => {
-  //   setMainState(props.mainState)
-  //   console.log('MAIN SSTATE SET TO PROP STATE')
-  // }, [props.mainState.componentEnabled])
+  useEffect(() => {
+    setMainState(props.mainState)
+  }, [props.mainState])
   
+  /**
+   * Performs a function on this component or it's child components.
+   * 
+   * @param command {string} The command.
+   */
   const systemSelfCommand = (command: string) => {
 
     
@@ -340,8 +346,8 @@ const Tap = (props: any) => {
 
       // Handle 'SYSTEM_TOGGLE' or some other variant
       const getParsedNewValue = (_myNewVal, _theOldStateValue) => {
-        console.log("_myNewVal: " + _myNewVal)
-        console.log(_theOldStateValue)
+        // console.log("_myNewVal: " + _myNewVal)
+        // console.log(_theOldStateValue)
         if(newValueParam == 'SYSTEM_TOGGLE') {
           // let oldValueAsBoolean = (_theOldStateValue === true || _theOldStateValue === 'true')
           let oldValueAsBoolean
@@ -357,7 +363,7 @@ const Tap = (props: any) => {
             console.log('WARNING: getparsedValue defaulted to type boolean')
           }
 
-          console.log(oldValueAsBoolean)
+          // console.log(oldValueAsBoolean)
           if(oldValueAsBoolean == true) {
             return false
           }
@@ -381,19 +387,14 @@ const Tap = (props: any) => {
         // objective: type check! this assumes it's a variable
         // objective: what about toggling 1 to 0 or 'on' 'off'
         newValue = getParsedNewValue( newValueParam, newComponentsArray[targetComponentIndex].props.mainState[componentProp])
-        console.log("newValue: " + newValue)
         
         newComponentsArray[targetComponentIndex].props.mainState[componentProp] = Util.getvarBEnsureSameType(
           newComponentsArray[targetComponentIndex].props.mainState[componentProp],
           newValue
         )
         
-        // console.log("newValue: " + newValue)
-        console.log("newValueParam: " + newValueParam)
         setMyComponents(newComponentsArray)
         // todo: set x, y, and width height if needed
-        console.log("newComponentsArray: " + newComponentsArray)
-        console.log(newComponentsArray)
         
         // set casterOnTouchEndCommand if available
         if(tapDown && newComponentsArray[targetComponentIndex].props?.casterOnTouchEnd != null) {
@@ -405,25 +406,14 @@ const Tap = (props: any) => {
 
       // Set prop of this component  
       else {
-       let newMainStateObj = Object.assign({}, mainState)
-       console.log(mainState.name)
-       console.log(mainState)
-       
-       newValue = getParsedNewValue( newValueParam, newMainStateObj[componentProp] )
-       console.log("newValueBBB: " + newValue)
-       console.log(newValue)
-       // CURRENT:  mainState always has componentEnabled as true for youDraw; need to find out why
-        // e.g. hitting japanese to toggle-hide it then show, just leaves it hidden;
-
-       newMainStateObj[componentProp] = Util.getvarBEnsureSameType(
-         newMainStateObj[componentProp],
-         newValue
-       )
-       console.log( newMainStateObj[componentProp] )
-        // newMainStateObj[targetComponentIndex].props[componentProp] = Util.getvarBEnsureSameType(
-        //   newMainStateObj[targetComponentIndex].props[componentProp],
-        //   newValue
-        // )
+        let newMainStateObj = Object.assign({}, mainState)
+        
+        newValue = getParsedNewValue( newValueParam, newMainStateObj[componentProp] )
+ 
+        newMainStateObj[componentProp] = Util.getvarBEnsureSameType(
+          newMainStateObj[componentProp],
+          newValue
+        )
 
         setMainState(newMainStateObj)
       }
@@ -433,8 +423,6 @@ const Tap = (props: any) => {
     else if(command.indexOf("SYSTEM_SELF_CONSOLE_LOG") != -1) {
         let msg = command.split('SYSTEM_SELF_CONSOLE_LOG ')[1]
         // let message = commandParams[1]
-  
-      console.log(msg)
     }
 
     else {
@@ -459,7 +447,6 @@ const Tap = (props: any) => {
         childComponentId, 
         { detail: { value:[{command: newCommand}] } } 
       )
-// console.log(myEventToDispatch)
       window.dispatchEvent(myEventToDispatch)
 
 
@@ -488,13 +475,6 @@ const Tap = (props: any) => {
 
   const commandStringHandler = (commandString) => {
      
-
-    if(props.id == 'youDraw-app') {
-      console.log(props)
-      console.log(commandString)
-      console.log(mainState)
-    }
-
     if(commandString != null) {
       let myCommand = commandString
       if(myCommand.indexOf('SYSTEM_SELF') != -1) {
@@ -521,11 +501,16 @@ const Tap = (props: any) => {
     // Util.stopMacroTimeoutsForMacroId('SYSTEM_SELF_CONSOLE_LOG lol')
   }
 
+  /**
+   * This function handles messages between different components.
+   * 
+   * @param customEvent {Event} Custom event with command details.
+   */
   const componentEventHandler = (customEvent: CustomEvent) => {
     
     if(customEvent.detail?.value != null) {
-console.log(typeof customEvent.detail?.value)
-console.log(customEvent.detail?.value)
+// console.log(typeof customEvent.detail?.value)
+// console.log(customEvent.detail?.value)
       storeMacroTimeouts(
         Util.commandMacroHandler(customEvent.detail?.value, (outputCommandStr: string) => {
           commandStringHandler(outputCommandStr)
@@ -653,11 +638,7 @@ console.log(customEvent.detail?.value)
   //   console.log(props)
   //   console.log(mainState)
   // }
-  if(props.id == 'youDraw-app') {
-    console.log(props)
-    console.log(mainState)
-  }
-  if(mainState?.componentEnabled) {  // or null probably (default to always enabled)
+  if(mainState.componentEnabled == true) {  // or null probably (default to always enabled)
     return (
       <div className="tap-container" style={tapContainerStyle}>
 
@@ -685,6 +666,7 @@ console.log(customEvent.detail?.value)
 
         {
           (dynamicComponent != null ) ?
+            // <YouDraw {...props} />
             [''].map(e => {
               const MyDynamicComponent = dynamicComponentsArray[ dynamicComponent ]
               // console.log(MyDynamicComponent)
